@@ -106,39 +106,105 @@ far_10_voltages = voltages;
 % Done with calibration based on provided data (see GitHub manual)
 slope = 1; % mm/ticks
 lowest_tick = 118;
-heights_to_test = (lowest_tick-tick_positions_to_test)*slope+1; % mm
+close_4_heights_to_test = (lowest_tick-close_4_tick_pos)*slope+1; % mm
+close_7_heights_to_test = (lowest_tick-close_7_tick_pos)*slope+1; % mm
+close_10_heights_to_test = (lowest_tick-close_10_tick_pos)*slope+1; % mm
+
+far_4_heights_to_test = (lowest_tick-far_4_tick_pos)*slope+1; % mm
+far_7_heights_to_test = (lowest_tick-far_7_tick_pos)*slope+1; % mm
+far_10_heights_to_test = (lowest_tick-far_10_tick_pos)*slope+1; % mm
 
 num_measure = 20;
 
-% setting up velocity
-[close_4_velocity, close_7_velocity, close_10_velocity, ...
-    far_4_velocity, far_7_velocity, far_10_velocity] = ...
-    deal(zeros(length(tick_positions_to_test), num_measure));
-
-for i = 1:length(tick_positions_to_test)
-    for j = 1:num_measure % ... something involving the number of measurements at each position
-            close_4_velocity(i,j) = bernoulli(calcurve(close_4_voltages(i,j))); 
-            close_7_velocity(i,j) = bernoulli(calcurve(close_7_voltages(i,j)));
-            close_10_velocity(i,j) = bernoulli(calcurve(close_10_voltages(i,j))); 
+% Velocities
+close_4_velocity = bernoulli(calcurve(close_4_voltages)); 
+close_7_velocity = bernoulli(calcurve(close_7_voltages));
+close_10_velocity = bernoulli(calcurve(close_10_voltages)); 
             
-            far_4_velocity(i,j) = bernoulli(calcurve(far_4_voltages(i,j))); 
-            far_7_velocity(i,j) = bernoulli(calcurve(far_4_voltages(i,j))); 
-            far_10_velocity(i,j) = bernoulli(calcurve(far_4_voltages(i,j))); 
-    end
-end
+far_4_velocity = bernoulli(calcurve(far_4_voltages)); 
+far_7_velocity = bernoulli(calcurve(far_7_voltages)); 
+far_10_velocity = bernoulli(calcurve(far_10_voltages)); 
 
 % Average and standard deviation across all rows
 close_4_mean_velocity =  mean(close_4_velocity, 2);
 close_4_std_velocity = std(close_4_velocity,0, 2);
-close_7_mean_velocity =  mean(close_4_velocity, 2);
-close_7_std_velocity = std(close_4_velocity,0, 2);
+
+close_7_mean_velocity =  mean(close_7_velocity, 2);
+close_7_std_velocity = std(close_7_velocity,0, 2);
+
 close_10_mean_velocity =  mean(close_10_velocity, 2);
 close_10_std_velocity = std(close_10_velocity,0, 2);
+
+far_4_mean_velocity =  mean(far_4_velocity, 2);
+far_4_std_velocity = std(far_4_velocity,0, 2);
+
+far_7_mean_velocity =  mean(far_7_velocity, 2);
+far_7_std_velocity = std(far_7_velocity,0, 2);
+
+far_10_mean_velocity =  mean(far_10_velocity, 2);
+far_10_std_velocity = std(far_10_velocity,0, 2);
+
+% Calculating free stream velcocity
+close_4_fs_vel = max(close_4_mean_velocity);
+close_7_fs_vel = max(close_7_mean_velocity);
+close_10_fs_vel = max(close_10_mean_velocity);
+
+far_4_fs_vel = max(far_4_mean_velocity);
+far_7_fs_vel = max(far_7_mean_velocity);
+far_10_fs_vel = max(far_10_mean_velocity);
+
+% calculating boundary layer thickness
+[~, close_4_bd_index] = find(close_4_mean_velocity > 0.99*close_4_fs_vel);
+[~, close_7_bd_index] = find(close_7_mean_velocity > 0.99*close_7_fs_vel);
+[~, close_10_bd_index] = find(close_10_mean_velocity > 0.99*close_10_fs_vel);
+
+close_4_bd = close_4_heights_to_test(close_4_bd_index(1));
+close_7_bd = close_7_heights_to_test(close_7_bd_index(1));
+close_10_bd = close_10_heights_to_test(close_10_bd_index(1));
+
+[~, far_4_bd_index] = find(far_4_mean_velocity > 0.99*far_4_fs_vel);
+[~, far_7_bd_index] = find(far_7_mean_velocity > 0.99*far_7_fs_vel);
+[~, far_10_bd_index] = find(far_10_mean_velocity > 0.99*far_10_fs_vel);
+
+far_4_bd = far_4_heights_to_test(far_4_bd_index(1));
+far_7_bd = far_7_heights_to_test(far_7_bd_index(1));
+far_10_bd = far_10_heights_to_test(far_10_bd_index(1));
+
+bd_height_4 = [close_4_bd far_4_bd];
+bd_height_7 = [close_7_bd far_7_bd];
+bd_height_10 = [close_10_bd far_10_bd];
+
+x_value = [0.494 1.495]; % m
 
 % Plotting
 figure(1)
 set(gca, 'FontSize', 16) 
-plot(close_4_mean_velocity, close_4_heights_to_test);
+hold on
+grid on
+errorbar(close_4_mean_velocity, close_4_heights_to_test, close_4_std_velocity);
+errorbar(far_4_mean_velocity, far_4_heights_to_test, far_4_std_velocity);
+
+errorbar(close_7_mean_velocity, close_7_heights_to_test, close_7_std_velocity);
+errorbar(far_7_mean_velocity, far_7_heights_to_test, far_7_std_velocity);
+
+errorbar(close_10_mean_velocity, close_10_heights_to_test, close_10_std_velocity);
+errorbar(far_10_mean_velocity, far_10_heights_to_test, far_10_std_velocity);
+
+legend(sprintf('%.3f m/s', close_4_fs_vel), sprintf('%.3f m/s', far_4_fs_vel), ...
+    sprintf('%.3f m/s', close_7_fs_vel), sprintf('%.3f m/s', far_7_fs_vel), ...
+    sprintf('%.3f m/s', close_10_fs_vel), sprintf('%.3f m/s', far_10_fs_vel));
+ylabel('Height (mm)');
+xlabel('Velocity (m/s)');
+title('Velocity Profiles')
+
+figure(2)
+clf
+hold on
+plot(x_value, bd_height_4, 'LineWidth', 2);
+plot(x_value, bd_height_7, 'LineWidth', 4);
+plot(x_value, bd_height_10, 'LineWidth', 2);
+xlabel('Distance Along Tunnel (m)')
+ylabel('Height (mm)');
 
 
 function p = calcurve(Vs)
