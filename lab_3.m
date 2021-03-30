@@ -64,23 +64,81 @@ save('lab_3_data.mat','tic_positions_to_test','voltages');
 
 %% Processing with provided data 03/25
 % loading
+% knob 4 close
 num = '4';
 pos = 'close';
 load(append('speed_', num, '_position_', pos, '.mat'));
+close_4_tick_pos = tick_positions_to_test;
+close_4_voltages = voltages;
+
+% knob 7 close
+num = '7';
+load(append('speed_', num, '_position_', pos, '.mat'));
+close_7_tick_pos = tick_positions_to_test;
+close_7_voltages = voltages;
+
+% knob 10 close
+num = '10';
+load(append('speed_', num, '_position_', pos, '.mat'));
+close_10_tick_pos = tick_positions_to_test;
+close_10_voltages = voltages;
+
+% knob 4 far
+num = '4';
+pos = 'far';
+load(append('speed_', num, '_position_', pos, '.mat'));
+far_4_tick_pos = tick_positions_to_test;
+far_4_voltages = voltages;
+
+% knob 7 far
+num = '7';
+load(append('speed_', num, '_position_', pos, '.mat'));
+far_7_tick_pos = tick_positions_to_test;
+far_7_voltages = voltages;
+
+% knob 10 far
+num = '10';
+load(append('speed_', num, '_position_', pos, '.mat'));
+far_10_tick_pos = tick_positions_to_test;
+far_10_voltages = voltages;
+
 %%
 % Done with calibration based on provided data (see GitHub manual)
 slope = 1; % mm/ticks
-
 lowest_tick = 118;
 heights_to_test = (lowest_tick-tick_positions_to_test)*slope+1; % mm
+
 num_measure = 20;
-velocity = zeros(length(tick_positions_to_test), num_measure);
+
+% setting up velocity
+[close_4_velocity, close_7_velocity, close_10_velocity, ...
+    far_4_velocity, far_7_velocity, far_10_velocity] = ...
+    deal(zeros(length(tick_positions_to_test), num_measure));
 
 for i = 1:length(tick_positions_to_test)
     for j = 1:num_measure % ... something involving the number of measurements at each position
-            velocity(i,j) = bernoulli(calcurve(voltages(i,j))); 
+            close_4_velocity(i,j) = bernoulli(calcurve(close_4_voltages(i,j))); 
+            close_7_velocity(i,j) = bernoulli(calcurve(close_7_voltages(i,j)));
+            close_10_velocity(i,j) = bernoulli(calcurve(close_10_voltages(i,j))); 
+            
+            far_4_velocity(i,j) = bernoulli(calcurve(far_4_voltages(i,j))); 
+            far_7_velocity(i,j) = bernoulli(calcurve(far_4_voltages(i,j))); 
+            far_10_velocity(i,j) = bernoulli(calcurve(far_4_voltages(i,j))); 
     end
 end
+
+% Average and standard deviation across all rows
+close_4_mean_velocity =  mean(close_4_velocity, 2);
+close_4_std_velocity = std(close_4_velocity,0, 2);
+close_7_mean_velocity =  mean(close_4_velocity, 2);
+close_7_std_velocity = std(close_4_velocity,0, 2);
+close_10_mean_velocity =  mean(close_10_velocity, 2);
+close_10_std_velocity = std(close_10_velocity,0, 2);
+
+% Plotting
+figure(1)
+set(gca, 'FontSize', 16) 
+plot(close_4_mean_velocity, close_4_heights_to_test);
 
 
 function p = calcurve(Vs)
