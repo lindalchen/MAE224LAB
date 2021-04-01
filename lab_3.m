@@ -200,6 +200,8 @@ title('Velocity Profiles')
 figure(2)
 clf
 hold on
+grid on
+set(gca, 'FontSize', 16)
 scatter(x_value, bd_height_4, 'LineWidth', 2);
 scatter(x_value, bd_height_7, 'LineWidth', 4);
 scatter(x_value, bd_height_10, 'LineWidth', 2);
@@ -213,6 +215,74 @@ legend(sprintf('%.3f m/s', avg_4), ...
     sprintf('%.3f m/s', avg_7), ...
     sprintf('%.3f m/s', avg_10)); 
 
+%% Discussion
+% Non-dimnesionalize velocity profile
+close_4_nond_vel = close_4_mean_velocity ./ close_4_fs_vel;
+close_7_nond_vel = close_7_mean_velocity ./ close_7_fs_vel;
+close_10_nond_vel = close_10_mean_velocity ./ close_10_fs_vel;
+
+far_4_nond_vel = close_4_mean_velocity ./ close_4_fs_vel;
+far_7_nond_vel = far_7_mean_velocity ./ far_7_fs_vel;
+far_10_nond_vel = far_10_mean_velocity ./ far_10_fs_vel;
+
+% calculation n for each profile
+v = 0.00001568; % kinematic viscosity of air
+for i = 1:30
+    close_4_n(i) = 0.001*close_4_heights_to_test(i).*(sqrt(close_4_fs_vel./(v.* 0.494)));
+    close_7_n(i) = 0.001*close_7_heights_to_test(i).*(sqrt(close_7_fs_vel./(v.* 0.494)));
+    close_10_n(i) = 0.001*close_10_heights_to_test(i).*(sqrt(close_10_fs_vel./(v.* 0.494)));
+ 
+    far_4_n(i) = 0.001*far_4_heights_to_test(i).*(sqrt(far_4_fs_vel./(v.* 1.495)));
+    far_10_n(i) = 0.001*far_10_heights_to_test(i).*(sqrt(far_10_fs_vel./(v.* 1.495)));
+end
+
+for i = 1:38
+    far_7_n(i) = 0.001*far_7_heights_to_test(i).*(sqrt(far_7_fs_vel./(v.* 1.495)));
+end
+ 
+% blasius.txt comparison
+load('blasius.txt')
+blasius_y = blasius(1:2000);
+blasius_x = blasius(2001:4000);
+ 
+figure(3)
+hold on
+grid on
+set(gca, 'FontSize', 14)
+plot(blasius_x, blasius_y);
+plot(close_4_nond_vel, close_4_n);
+plot(close_7_nond_vel, close_7_n);
+plot(close_10_nond_vel, close_10_n);
+plot(far_4_nond_vel, far_4_n);
+plot(far_7_nond_vel, far_7_n);
+plot(far_10_nond_vel, far_10_n);
+legend('Blasius', sprintf('%.3f m/s', close_4_fs_vel), sprintf('%.3f m/s', close_7_fs_vel), ...
+    sprintf('%.3f m/s', close_10_fs_vel), sprintf('%.3f m/s', far_4_fs_vel), ...
+    sprintf('%.3f m/s', far_7_fs_vel), sprintf('%.3f m/s', far_10_fs_vel));
+xlabel('Non-Dimensional Velocity');
+ylabel('$\eta$', 'Interpreter', 'Latex');
+title('Non-Dimensionalized Velocity Profiles and Blasius Solution');
+ 
+% experimental vs laminar vs turbulent
+x_tube = 0:0.01:1.5;
+ 
+for i = 1:length(x_tube)
+    Re_4 = (close_4_fs_vel*x_tube(i))/v;
+    lam_4_bd(i) = (4.91*x_tube(i))/(Re_4.^(0.5));
+    turb_4_bd(i) = (0.38*x_tube(i))/(Re_4^(0.2));
+end
+ 
+bd_4_exp = [0.011,0.015];
+figure(4)
+hold on
+grid on
+set(gca, 'FontSize', 14)
+plot(x_tube,lam_4_bd);
+plot(x_tube,turb_4_bd);
+scatter(x_value, bd_4_exp, 'filled');
+legend('Laminar', 'Turbulent', 'Experimental');
+xlabel('x')
+ylabel('$\delta$(x)', 'Interpreter', 'Latex');
 
 function p = calcurve(Vs)
     V_plus = 3.337; % volts
