@@ -106,13 +106,13 @@ far_10_voltages = voltages;
 % Done with calibration based on provided data (see GitHub manual)
 slope = 1; % mm/ticks
 lowest_tick = 118;
-close_4_heights_to_test = (lowest_tick-close_4_tick_pos)*slope+1; % mm
-close_7_heights_to_test = (lowest_tick-close_7_tick_pos)*slope+1; % mm
-close_10_heights_to_test = (lowest_tick-close_10_tick_pos)*slope+1; % mm
+close_4_heights_to_test = (lowest_tick-close_4_tick_pos)*slope; % mm
+close_7_heights_to_test = (lowest_tick-close_7_tick_pos)*slope; % mm
+close_10_heights_to_test = (lowest_tick-close_10_tick_pos)*slope; % mm
 
-far_4_heights_to_test = (lowest_tick-far_4_tick_pos)*slope+1; % mm
-far_7_heights_to_test = (lowest_tick-far_7_tick_pos)*slope+1; % mm
-far_10_heights_to_test = (lowest_tick-far_10_tick_pos)*slope+1; % mm
+far_4_heights_to_test = (lowest_tick-far_4_tick_pos)*slope; % mm
+far_7_heights_to_test = (lowest_tick-far_7_tick_pos)*slope; % mm
+far_10_heights_to_test = (lowest_tick-far_10_tick_pos)*slope; % mm
 
 num_measure = 20;
 
@@ -153,22 +153,22 @@ far_4_fs_vel = max(far_4_mean_velocity);
 far_7_fs_vel = max(far_7_mean_velocity);
 far_10_fs_vel = max(far_10_mean_velocity);
 
-% calculating boundary layer thickness
-[~, close_4_bd_index] = find(close_4_mean_velocity > 0.99*close_4_fs_vel);
-[~, close_7_bd_index] = find(close_7_mean_velocity > 0.99*close_7_fs_vel);
-[~, close_10_bd_index] = find(close_10_mean_velocity > 0.99*close_10_fs_vel);
+% calculating boundary layer thickness fix thi
+[~, close_4_bd_index] = min(abs(close_4_mean_velocity- 0.99*close_4_fs_vel));
+[~, close_7_bd_index] = min(abs(close_7_mean_velocity- 0.99*close_7_fs_vel));
+[~, close_10_bd_index] = min(abs(close_10_mean_velocity- 0.99*close_10_fs_vel));
 
-close_4_bd = close_4_heights_to_test(close_4_bd_index(1));
-close_7_bd = close_7_heights_to_test(close_7_bd_index(1));
-close_10_bd = close_10_heights_to_test(close_10_bd_index(1));
+close_4_bd = close_4_heights_to_test(close_4_bd_index);
+close_7_bd = close_7_heights_to_test(close_7_bd_index);
+close_10_bd = close_10_heights_to_test(close_10_bd_index);
 
-[~, far_4_bd_index] = find(far_4_mean_velocity > 0.99*far_4_fs_vel);
-[~, far_7_bd_index] = find(far_7_mean_velocity > 0.99*far_7_fs_vel);
-[~, far_10_bd_index] = find(far_10_mean_velocity > 0.99*far_10_fs_vel);
+[~, far_4_bd_index] = min(abs(far_4_mean_velocity-0.99*far_4_fs_vel));
+[~, far_7_bd_index] = min(abs(far_7_mean_velocity-0.99*far_7_fs_vel));
+[~, far_10_bd_index] = min(abs(far_10_mean_velocity-0.99*far_10_fs_vel));
 
-far_4_bd = far_4_heights_to_test(far_4_bd_index(1));
-far_7_bd = far_7_heights_to_test(far_7_bd_index(1));
-far_10_bd = far_10_heights_to_test(far_10_bd_index(1));
+far_4_bd = far_4_heights_to_test(far_4_bd_index);
+far_7_bd = far_7_heights_to_test(far_7_bd_index);
+far_10_bd = far_10_heights_to_test(far_10_bd_index);
 
 bd_height_4 = [close_4_bd far_4_bd];
 bd_height_7 = [close_7_bd far_7_bd];
@@ -200,11 +200,18 @@ title('Velocity Profiles')
 figure(2)
 clf
 hold on
-plot(x_value, bd_height_4, 'LineWidth', 2);
-plot(x_value, bd_height_7, 'LineWidth', 4);
-plot(x_value, bd_height_10, 'LineWidth', 2);
+scatter(x_value, bd_height_4, 'LineWidth', 2);
+scatter(x_value, bd_height_7, 'LineWidth', 4);
+scatter(x_value, bd_height_10, 'LineWidth', 2);
 xlabel('Distance Along Tunnel (m)')
 ylabel('Height (mm)');
+title('Boundary Layer Thickness of Various Velocities Along Wind Tunnel');
+avg_4 = mean([close_4_fs_vel, far_4_fs_vel]);
+avg_7 = mean([close_7_fs_vel, far_7_fs_vel]);
+avg_10 = mean([close_10_fs_vel, far_10_fs_vel]);
+legend(sprintf('%.3f m/s', avg_4), ...
+    sprintf('%.3f m/s', avg_7), ...
+    sprintf('%.3f m/s', avg_10)); 
 
 
 function p = calcurve(Vs)
