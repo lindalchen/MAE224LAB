@@ -267,9 +267,9 @@ title('Non-Dimensionalized Velocity Profiles and Blasius Solution');
 x_tube = 0:0.01:1.5;
  
 for i = 1:length(x_tube)
-    Re_4 = (close_4_fs_vel*x_tube(i))/v;
-    lam_4_bd(i) = (4.91*x_tube(i))/(Re_4.^(0.5));
-    turb_4_bd(i) = (0.38*x_tube(i))/(Re_4^(0.2));
+    Re_4(i) = (close_4_fs_vel*x_tube(i))/v;
+    lam_4_bd(i) = (4.91*x_tube(i))./(Re_4(i).^(0.5));
+    turb_4_bd(i) = (0.38*x_tube(i))./(Re_4(i).^(0.2));
 end
  
 bd_4_exp = [0.011,0.015];
@@ -283,6 +283,7 @@ scatter(x_value, bd_4_exp, 'filled');
 legend('Laminar', 'Turbulent', 'Experimental');
 xlabel('x')
 ylabel('$\delta$(x)', 'Interpreter', 'Latex');
+title(sprintf('Boundary Layer Profile for %.3f m/s', close_4_fs_vel))
 
 function p = calcurve(Vs)
     V_plus = 3.337; % volts

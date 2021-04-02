@@ -41,4 +41,7 @@ Re_3 = rho_air*u3*L/mu_air;
 % how do you find critical angle of attck
 % eyeball it off the graph?
 
+%% QBlade Simulation
+
+
 
