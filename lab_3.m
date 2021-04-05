@@ -226,19 +226,15 @@ far_7_nond_vel = far_7_mean_velocity ./ far_7_fs_vel;
 far_10_nond_vel = far_10_mean_velocity ./ far_10_fs_vel;
 
 % calculation n for each profile
-v = 0.00001568; % kinematic viscosity of air
-for i = 1:30
-    close_4_n(i) = 0.001*close_4_heights_to_test(i).*(sqrt(close_4_fs_vel./(v.* 0.494)));
-    close_7_n(i) = 0.001*close_7_heights_to_test(i).*(sqrt(close_7_fs_vel./(v.* 0.494)));
-    close_10_n(i) = 0.001*close_10_heights_to_test(i).*(sqrt(close_10_fs_vel./(v.* 0.494)));
- 
-    far_4_n(i) = 0.001*far_4_heights_to_test(i).*(sqrt(far_4_fs_vel./(v.* 1.495)));
-    far_10_n(i) = 0.001*far_10_heights_to_test(i).*(sqrt(far_10_fs_vel./(v.* 1.495)));
-end
+v = 0.00001568; % kinematic viscosity of air, grabbed from website
 
-for i = 1:38
-    far_7_n(i) = 0.001*far_7_heights_to_test(i).*(sqrt(far_7_fs_vel./(v.* 1.495)));
-end
+close_4_n = 0.001*close_4_heights_to_test.*(sqrt(close_4_fs_vel./(v.* 0.494)));
+close_7_n = 0.001*close_7_heights_to_test.*(sqrt(close_7_fs_vel./(v.* 0.494)));
+close_10_n = 0.001*close_10_heights_to_test.*(sqrt(close_10_fs_vel./(v.* 0.494)));
+
+far_4_n = 0.001*far_4_heights_to_test.*(sqrt(far_4_fs_vel./(v.* 1.495)));
+far_7_n = 0.001*far_7_heights_to_test.*(sqrt(far_7_fs_vel./(v.* 1.495)));
+far_10_n = 0.001*far_10_heights_to_test.*(sqrt(far_10_fs_vel./(v.* 1.495)));
  
 % blasius.txt comparison
 load('blasius.txt')
@@ -261,7 +257,7 @@ legend('Blasius', sprintf('%.3f m/s', close_4_fs_vel), sprintf('%.3f m/s', close
     sprintf('%.3f m/s', far_7_fs_vel), sprintf('%.3f m/s', far_10_fs_vel));
 xlabel('Non-Dimensional Velocity');
 ylabel('$\eta$', 'Interpreter', 'Latex');
-title('Non-Dimensionalized Velocity Profiles and Blasius Solution');
+title('Non-Dimensionalized Velocity Profiles in Comparison with the Blasius Solution');
  
 % experimental vs laminar vs turbulent
 x_tube = 0:0.01:1.5;
@@ -281,9 +277,91 @@ plot(x_tube,lam_4_bd);
 plot(x_tube,turb_4_bd);
 scatter(x_value, bd_4_exp, 'filled');
 legend('Laminar', 'Turbulent', 'Experimental');
-xlabel('x')
+xlabel('x (m)')
 ylabel('$\delta$(x)', 'Interpreter', 'Latex');
 title(sprintf('Boundary Layer Profile for %.3f m/s', close_4_fs_vel))
+
+%% Error Analysis
+% uncertainty of the average velocity, pressure terms in it
+close_4_pres_err = error_sensor(mean(calcurve(close_4_voltages), 2)); 
+close_7_pres_err = error_sensor(mean(calcurve(close_7_voltages), 2));
+close_10_pres_err = error_sensor(mean(calcurve(close_10_voltages), 2)); 
+            
+far_4_pres_err = error_sensor(mean(calcurve(far_4_voltages), 2)); 
+far_7_pres_err = error_sensor(mean(calcurve(far_7_voltages), 2)); 
+far_10_pres_err = error_sensor(mean(calcurve(far_10_voltages), 2)); 
+
+% Plot
+figure(5)
+hold on
+% Averages and Error Bar
+% Close 4
+errorbar(close_4_mean_velocity, close_4_heights_to_test, close_4_pres_err, ...
+    'horizontal');
+scatter_c4v = repelem(close_4_heights_to_test,20);
+arr_c4v = reshape(close_4_velocity', 600, 1); % see line 120
+scatter(arr_c4v, scatter_c4v, 'filled');
+
+% Far 4
+errorbar(far_4_mean_velocity, far_4_heights_to_test, far_4_pres_err, ...
+    'horizontal');
+scatter_f4v = repelem(far_4_heights_to_test,20);
+arr_f4v = reshape(far_4_velocity', 600, 1);
+scatter(arr_f4v, scatter_f4v, 'filled');
+
+% Close 7
+errorbar(close_7_mean_velocity, close_7_heights_to_test, close_7_pres_err, ...
+    'horizontal');
+scatter_c7v = repelem(close_4_heights_to_test,20);
+arr_c7v = reshape(close_7_velocity', 600, 1);
+scatter(arr_c7v, scatter_c7v, 'filled');
+
+% Far 7
+errorbar(far_7_mean_velocity, far_7_heights_to_test, far_7_pres_err, ...
+    'horizontal');
+scatter_f7v = repelem(far_7_heights_to_test,20);
+arr_f7v = reshape(far_7_velocity', 38*20, 1);
+scatter(arr_f7v, scatter_f7v, 'filled');
+
+% Close 10
+errorbar(close_10_mean_velocity, close_10_heights_to_test, close_10_pres_err, ...
+    'horizontal');
+scatter_c10v = repelem(close_4_heights_to_test,20);
+arr_c10v = reshape(close_10_velocity', 600, 1);
+scatter(arr_c10v, scatter_c10v, 'filled');
+
+% Far 10
+errorbar(far_10_mean_velocity, far_10_heights_to_test, far_10_pres_err, ...
+    'horizontal');
+scatter_f10v = repelem(far_10_heights_to_test,20);
+arr_f10v = reshape(far_10_velocity', 600, 1);
+scatter(arr_f10v, scatter_f10v, 'filled');
+
+legend(sprintf('%.3f m/s Average with Error', close_4_fs_vel), ...
+    sprintf('%.3f m/s Raw Velocities', close_4_fs_vel), ...
+    sprintf('%.3f m/s Average with Error', far_4_fs_vel), ...
+    sprintf('%.3f m/s Raw Velocities', far_4_fs_vel), ...
+    sprintf('%.3f m/s Average with Error', close_7_fs_vel), ...
+    sprintf('%.3f m/s Raw Velocities', close_7_fs_vel), ...
+    sprintf('%.3f m/s Average with Error', far_7_fs_vel), ...
+    sprintf('%.3f m/s Raw Velocities', far_7_fs_vel), ...
+    sprintf('%.3f m/s Average with Error', close_10_fs_vel), ...
+    sprintf('%.3f m/s Raw Velocities', close_10_fs_vel), ...
+    sprintf('%.3f m/s Average with Error', far_10_fs_vel), ...
+    sprintf('%.3f m/s Raw Velocities', far_10_fs_vel))
+ylabel('Height (mm)');
+xlabel('Velocity (m/s)');
+title('Velocity Profiles')
+
+function sigma_v = error_sensor(p_app)
+    p_err_value = 248.84; % pascals, sensor range
+    p_err_percent = 0.02; % percentage
+    p_err = p_err_value*p_err_percent*2; % pascals
+
+    rho = 1.23; % kg/m^3 density of air
+    dv_dp = 1./sqrt(2.*rho.*p_app);
+    sigma_v = sqrt(p_err.^2.*(dv_dp).^2);
+end
 
 function p = calcurve(Vs)
     V_plus = 3.337; % volts
